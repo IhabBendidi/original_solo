@@ -23,7 +23,7 @@ KW = ["artificial intelligence", "deep learning", "unsupervised learning", "cont
 
 
 EXTRA_REQUIREMENTS = {
-    "dali": ["nvidia-dali-cuda110"],
+    "dali": ["nvidia-dali-cuda102"],
     "umap": ["matplotlib", "seaborn", "pandas", "umap-learn"],
 }
 
@@ -59,7 +59,7 @@ setup(
     extras_require=EXTRA_REQUIREMENTS,
     dependency_links=["https://developer.download.nvidia.com/compute/redist"],
     classifiers=[
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],

@@ -53,7 +53,7 @@ from solo.backbones import (
 )
 from solo.utils.knn import WeightedKNNClassifier
 from solo.utils.lars import LARS
-from solo.utils.metrics import accuracy_at_k, weighted_mean
+from solo.utils.metrics import accuracy_at_k, weighted_mean,per_class_weighted_mean
 from solo.utils.misc import compute_dataset_size
 from solo.utils.momentum import MomentumUpdater, initialize_momentum_params
 from torch.optim.lr_scheduler import MultiStepLR
@@ -531,9 +531,9 @@ class BaseMethod(pl.LightningModule):
         loss = F.cross_entropy(logits, targets, ignore_index=-1)
         # handle when the number of classes is smaller than 5
         top_k_max = min(5, logits.size(1))
-        acc1, acc5 = accuracy_at_k(logits, targets, top_k=(1, top_k_max))
+        class_acc,acc1, acc5 = accuracy_at_k(logits, targets, top_k=(1, top_k_max))
 
-        out.update({"loss": loss, "acc1": acc1, "acc5": acc5})
+        out.update({"loss": loss, "acc1": acc1, "acc5": acc5,"class_acc":class_acc})
         return out
 
     def training_step(self, batch: List[Any], batch_idx: int) -> Dict[str, Any]:
@@ -615,6 +615,7 @@ class BaseMethod(pl.LightningModule):
             "val_loss": out["loss"],
             "val_acc1": out["acc1"],
             "val_acc5": out["acc5"],
+            "val_class_acc": out["class_acc"],
         }
         return metrics
 
@@ -630,7 +631,8 @@ class BaseMethod(pl.LightningModule):
         val_loss = weighted_mean(outs, "val_loss", "batch_size")
         val_acc1 = weighted_mean(outs, "val_acc1", "batch_size")
         val_acc5 = weighted_mean(outs, "val_acc5", "batch_size")
-
+        val_class_acc = per_class_weighted_mean(outs, "val_class_acc", "batch_size")
+        d = {str(index) + "_class_acc": value for index, value in enumerate(val_class_acc)}
         log = {"val_loss": val_loss, "val_acc1": val_acc1, "val_acc5": val_acc5}
 
         if self.knn_eval and not self.trainer.sanity_checking:
@@ -638,6 +640,7 @@ class BaseMethod(pl.LightningModule):
             log.update({"val_knn_acc1": val_knn_acc1, "val_knn_acc5": val_knn_acc5})
 
         self.log_dict(log, sync_dist=True)
+        self.log_dict(d, sync_dist=True)
 
 
 class BaseMomentumMethod(BaseMethod):
@@ -793,8 +796,8 @@ class BaseMomentumMethod(BaseMethod):
             logits = self.momentum_classifier(feats)
 
             loss = F.cross_entropy(logits, targets, ignore_index=-1)
-            acc1, acc5 = accuracy_at_k(logits, targets, top_k=(1, 5))
-            out.update({"logits": logits, "loss": loss, "acc1": acc1, "acc5": acc5})
+            class_acc,acc1, acc5 = accuracy_at_k(logits, targets, top_k=(1, 5))
+            out.update({"logits": logits, "loss": loss, "acc1": acc1, "acc5": acc5,"class_acc":class_acc})
 
         return out
 
@@ -906,6 +909,7 @@ class BaseMomentumMethod(BaseMethod):
                 "momentum_val_loss": out["loss"],
                 "momentum_val_acc1": out["acc1"],
                 "momentum_val_acc5": out["acc5"],
+                "momentum_val_class_acc": out["class_acc"],
             }
 
         return parent_metrics, metrics
@@ -928,6 +932,8 @@ class BaseMomentumMethod(BaseMethod):
             val_loss = weighted_mean(momentum_outs, "momentum_val_loss", "batch_size")
             val_acc1 = weighted_mean(momentum_outs, "momentum_val_acc1", "batch_size")
             val_acc5 = weighted_mean(momentum_outs, "momentum_val_acc5", "batch_size")
+            val_class_acc = per_class_weighted_mean(momentum_outs, "momentum_val_class_acc", "batch_size")
+            d = {str(index) + "_class_acc": value for index, value in enumerate(val_class_acc)}
 
             log = {
                 "momentum_val_loss": val_loss,
@@ -935,3 +941,4 @@ class BaseMomentumMethod(BaseMethod):
                 "momentum_val_acc5": val_acc5,
             }
             self.log_dict(log, sync_dist=True)
+            self.log_dict(d, sync_dist=True)
