@@ -19,6 +19,7 @@
 
 import os
 from pprint import pprint
+import time
 
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor
@@ -221,4 +222,7 @@ def main():
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     main()
+    print("--- %s hours ---" % ((time.time() - start_time)/3600))
+

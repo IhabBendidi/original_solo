@@ -124,6 +124,8 @@ class MoCoV2Plus(BaseMomentumMethod):
         batch_size = keys.shape[1]
         ptr = int(self.queue_ptr)  # type: ignore
         assert self.queue_size % batch_size == 0  # for simplicity
+        #while self.queue_size % batch_size != 0:
+            #self.queue_size += 1
 
         # replace the keys at ptr (dequeue and enqueue)
         keys = keys.permute(0, 2, 1)
