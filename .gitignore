@@ -18,7 +18,7 @@ datasets/
 *.pkl
 
 bash_files/*.txt
-bash_files/*/training_model_paths/*
+bash_files/*/training_model_paths/*.txt
 bash_files/*/wandb/
 bash_files/*.png
 bash_files/*.jpg

@@ -1,1 +1,1 @@
-trained_models/mocov2plus/35lpcc0t
+trained_models/mocov2plus/wck9yf2y
