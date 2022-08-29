@@ -13,7 +13,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../../main_pretrain.py 
     --min_lr 0.0006 \
     --classifier_lr 0.1 \
     --weight_decay 1e-6 \
-    --batch_size 512 \
+    --batch_size 256 \
     --num_workers 4 \
     --crop_size 32 \
     --brightness 0.4 \

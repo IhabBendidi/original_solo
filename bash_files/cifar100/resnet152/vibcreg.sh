@@ -12,7 +12,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../../main_pretrain.py 
     --scheduler warmup_cosine \
     --lr 0.3 \
     --weight_decay 1e-4 \
-    --batch_size 512 \
+    --batch_size 256 \
     --num_workers 4 \
     --crop_size 32 \
     --min_scale 0.2 \
