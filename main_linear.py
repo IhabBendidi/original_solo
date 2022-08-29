@@ -56,7 +56,7 @@ def main():
     # swin specific
     if "swin" in args.backbone and cifar:
         kwargs["window_size"] = 4
-
+    kwargs["method"] = "mocov2plus"
     backbone = backbone_model(**kwargs)
     if args.backbone.startswith("resnet"):
         # remove fc layer

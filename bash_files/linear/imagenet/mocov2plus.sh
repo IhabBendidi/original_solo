@@ -1,11 +1,11 @@
-python3 main_linear.py \
+CUDA_VISIBLE_DEVICES=0,1,2 python3 main_linear.py \
     --dataset imagenet \
-    --backbone resnet50 \
-    --data_dir /data/datasets \
-    --train_dir imagenet/train \
-    --val_dir imagenet/val \
+    --backbone resnet18 \
+    --data_dir /projects/imagesets \
+    --train_dir  imagenet/RawImages/train \
+    --val_dir  imagenet/RawImages/val \
     --max_epochs 100 \
-    --devices 0 \
+    --devices 0,1,2 \
     --accelerator gpu \
     --precision 16 \
     --optimizer sgd \
@@ -13,13 +13,11 @@ python3 main_linear.py \
     --lr 3.0 \
     --lr_decay_steps 60 80 \
     --weight_decay 0 \
-    --batch_size 256 \
+    --batch_size 512 \
     --num_workers 5 \
-    --dali \
-    --name mocov2plus-imagenet-linear-eval \
-    --pretrained_feature_extractor PATH \
-    --project solo-learn \
-    --entity unitn-mhug \
+    --pretrained_feature_extractor /projects/biofid/augmentations/solo-learn/trained_models/mocov2plus/3dfbkqd7/imagenet_original-3dfbkqd7-ep=99.ckpt \
+    --name linear_eval_moco \
+    --project imagenet_results \
+    --entity labrats \
     --wandb \
-    --save_checkpoint \
-    --auto_resume
+    --dali

@@ -36,6 +36,8 @@ tests/*.jpeg
 zoo/*.png
 zoo/*.jpg
 zoo/*.jpeg
+*errors*/
+*terminal*/
 
 saved_models/
 model_storage*/

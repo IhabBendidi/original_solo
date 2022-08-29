@@ -28,7 +28,7 @@ import torch.nn.functional as F
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 from solo.methods.base import BaseMethod
 from solo.utils.lars import LARS
-from solo.utils.metrics import accuracy_at_k, weighted_mean
+from solo.utils.metrics import accuracy_at_k, weighted_mean,per_class_weighted_mean
 from solo.utils.misc import compute_dataset_size
 from torch.optim.lr_scheduler import ExponentialLR, MultiStepLR, ReduceLROnPlateau
 
@@ -303,8 +303,8 @@ class LinearModel(pl.LightningModule):
 
         loss = F.cross_entropy(out, target)
 
-        acc1, acc5 = accuracy_at_k(out, target, top_k=(1, 5))
-        return batch_size, loss, acc1, acc5
+        class_acc,ref_occurences,acc1, acc5 = accuracy_at_k(out, target, top_k=(1, 5))
+        return batch_size, loss, acc1, acc5, class_acc, ref_occurences
 
     def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:
         """Performs the training step for the linear eval.
@@ -320,7 +320,7 @@ class LinearModel(pl.LightningModule):
         # set backbone to eval mode
         self.backbone.eval()
 
-        _, loss, acc1, acc5 = self.shared_step(batch, batch_idx)
+        _, loss, acc1, acc5, class_acc, ref_occurences = self.shared_step(batch, batch_idx)
 
         log = {"train_loss": loss, "train_acc1": acc1, "train_acc5": acc5}
         self.log_dict(log, on_epoch=True, sync_dist=True)
@@ -339,13 +339,15 @@ class LinearModel(pl.LightningModule):
                 the classification loss and accuracies.
         """
 
-        batch_size, loss, acc1, acc5 = self.shared_step(batch, batch_idx)
+        batch_size, loss, acc1, acc5,class_acc, ref_occurences = self.shared_step(batch, batch_idx)
 
         results = {
             "batch_size": batch_size,
             "val_loss": loss,
             "val_acc1": acc1,
             "val_acc5": acc5,
+            "val_class_acc": class_acc,
+            "val_ref_occurences": ref_occurences,
         }
         return results
 
@@ -361,6 +363,9 @@ class LinearModel(pl.LightningModule):
         val_loss = weighted_mean(outs, "val_loss", "batch_size")
         val_acc1 = weighted_mean(outs, "val_acc1", "batch_size")
         val_acc5 = weighted_mean(outs, "val_acc5", "batch_size")
+        val_class_acc = per_class_weighted_mean(outs, "val_class_acc", "batch_size","val_ref_occurences")
+        d = {str(index) + "_class_acc": value for index, value in enumerate(val_class_acc)}
 
         log = {"val_loss": val_loss, "val_acc1": val_acc1, "val_acc5": val_acc5}
+        log.update(d)
         self.log_dict(log, sync_dist=True)

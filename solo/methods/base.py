@@ -53,7 +53,7 @@ from solo.backbones import (
 )
 from solo.utils.knn import WeightedKNNClassifier
 from solo.utils.lars import LARS
-from solo.utils.metrics import accuracy_at_k, weighted_mean
+from solo.utils.metrics import accuracy_at_k, weighted_mean,per_class_weighted_mean
 from solo.utils.misc import compute_dataset_size
 from solo.utils.momentum import MomentumUpdater, initialize_momentum_params
 from torch.optim.lr_scheduler import MultiStepLR
@@ -125,7 +125,7 @@ class BaseMethod(pl.LightningModule):
         min_lr: float = 0.0,
         warmup_start_lr: float = 0.00003,
         warmup_epochs: float = 10,
-        scheduler_interval: str = "step",
+        scheduler_interval: str = "epoch",
         lr_decay_steps: Sequence = None,
         knn_eval: bool = False,
         knn_k: int = 20,
@@ -136,7 +136,6 @@ class BaseMethod(pl.LightningModule):
         It adds shared arguments, extract basic learnable parameters, creates optimizers
         and schedulers, implements basic training_step for any number of crops,
         trains the online classifier and implements validation_step.
-
         Args:
             backbone (str): architecture of the base backbone.
             num_classes (int): number of classes.
@@ -170,21 +169,17 @@ class BaseMethod(pl.LightningModule):
             no_channel_last (bool). Disables channel last conversion operation which
                 speeds up training considerably. Defaults to False.
                 https://pytorch.org/tutorials/intermediate/memory_format_tutorial.html#converting-existing-models
-
         .. note::
             When using distributed data parallel, the batch size and the number of workers are
             specified on a per process basis. Therefore, the total batch size (number of workers)
             is calculated as the product of the number of GPUs with the batch size (number of
             workers).
-
         .. note::
             The learning rate (base, min and warmup) is automatically scaled linearly based on the
             batch size and gradient accumulation.
-
         .. note::
             For CIFAR10/100, the first convolutional and maxpooling layers of the ResNet backbone
             are slightly adjusted to handle lower resolution images (32x32 instead of 224x224).
-
         """
 
         super().__init__()
@@ -260,6 +255,7 @@ class BaseMethod(pl.LightningModule):
             self.features_dim = self.backbone.num_features
 
         self.classifier = nn.Linear(self.features_dim, num_classes)
+        print("######num classes", num_classes)
 
         if self.knn_eval:
             self.knn = WeightedKNNClassifier(k=self.knn_k, distance_fx="euclidean")
@@ -277,11 +273,9 @@ class BaseMethod(pl.LightningModule):
     @staticmethod
     def add_model_specific_args(parent_parser: ArgumentParser) -> ArgumentParser:
         """Adds shared basic arguments that are shared for all methods.
-
         Args:
             parent_parser (ArgumentParser): argument parser that is used to create a
                 argument group.
-
         Returns:
             ArgumentParser: same as the argument, used to avoid errors.
         """
@@ -389,7 +383,6 @@ class BaseMethod(pl.LightningModule):
     @property
     def learnable_params(self) -> List[Dict[str, Any]]:
         """Defines learnable parameters for the base class.
-
         Returns:
             List[Dict[str, Any]]:
                 list of dicts containing learnable parameters and possible settings.
@@ -407,7 +400,6 @@ class BaseMethod(pl.LightningModule):
 
     def configure_optimizers(self) -> Tuple[List, List]:
         """Collects learnable parameters and configures the optimizer and learning rate scheduler.
-
         Returns:
             Tuple[List, List]: two lists containing the optimizer and the scheduler.
         """
@@ -469,7 +461,6 @@ class BaseMethod(pl.LightningModule):
         This improves performance marginally. It should be fine
         since we are not affected by any of the downsides descrited in
         https://pytorch.org/docs/stable/generated/torch.optim.Optimizer.zero_grad.html#torch.optim.Optimizer.zero_grad
-
         Implemented as in here
         https://pytorch-lightning.readthedocs.io/en/1.5.10/guides/speed.html#set-grads-to-none
         """
@@ -481,10 +472,8 @@ class BaseMethod(pl.LightningModule):
     def forward(self, X) -> Dict:
         """Basic forward method. Children methods should call this function,
         modify the ouputs (without deleting anything) and return it.
-
         Args:
             X (torch.Tensor): batch of images in tensor format.
-
         Returns:
             Dict: dict of logits and features.
         """
@@ -500,10 +489,8 @@ class BaseMethod(pl.LightningModule):
         for the multicrop views. Children classes can override this method to
         add new outputs but should still call this function. Make sure
         that this method and its overrides always return a dict.
-
         Args:
             X (torch.Tensor): batch of images in tensor format.
-
         Returns:
             Dict: dict of features.
         """
@@ -516,11 +503,9 @@ class BaseMethod(pl.LightningModule):
     def _base_shared_step(self, X: torch.Tensor, targets: torch.Tensor) -> Dict:
         """Forwards a batch of images X and computes the classification loss, the logits, the
         features, acc@1 and acc@5.
-
         Args:
             X (torch.Tensor): batch of images in tensor format.
             targets (torch.Tensor): batch of labels for X.
-
         Returns:
             Dict: dict containing the classification loss, logits, features, acc@1 and acc@5.
         """
@@ -531,20 +516,19 @@ class BaseMethod(pl.LightningModule):
         loss = F.cross_entropy(logits, targets, ignore_index=-1)
         # handle when the number of classes is smaller than 5
         top_k_max = min(5, logits.size(1))
-        acc1, acc5 = accuracy_at_k(logits, targets, top_k=(1, top_k_max))
+        class_acc,ref_occurences,acc1, acc5 = accuracy_at_k(logits, targets, top_k=(1, top_k_max),number_of_classes=self.num_classes)
+        #print(class_acc)
 
-        out.update({"loss": loss, "acc1": acc1, "acc5": acc5})
+        out.update({"loss": loss, "acc1": acc1, "acc5": acc5,"class_acc":class_acc,"ref_occurences":ref_occurences})
         return out
 
     def training_step(self, batch: List[Any], batch_idx: int) -> Dict[str, Any]:
         """Training step for pytorch lightning. It does all the shared operations, such as
         forwarding the crops, computing logits and computing statistics.
-
         Args:
             batch (List[Any]): a batch of data in the format of [img_indexes, [X], Y], where
                 [X] is a list of size self.num_crops containing batches of images.
             batch_idx (int): index of the batch.
-
         Returns:
             Dict[str, Any]: dict with the classification loss, features and logits.
         """
@@ -592,11 +576,9 @@ class BaseMethod(pl.LightningModule):
     ) -> Dict[str, Any]:
         """Validation step for pytorch lightning. It does all the shared operations, such as
         forwarding a batch of images, computing logits and computing metrics.
-
         Args:
             batch (List[torch.Tensor]):a batch of data in the format of [img_indexes, X, Y].
             batch_idx (int): index of the batch.
-
         Returns:
             Dict[str, Any]: dict with the batch_size (used for averaging), the classification loss
                 and accuracies.
@@ -615,6 +597,8 @@ class BaseMethod(pl.LightningModule):
             "val_loss": out["loss"],
             "val_acc1": out["acc1"],
             "val_acc5": out["acc5"],
+            "val_class_acc": out["class_acc"],
+            "val_ref_occurences": out["ref_occurences"],
         }
         return metrics
 
@@ -622,7 +606,6 @@ class BaseMethod(pl.LightningModule):
         """Averages the losses and accuracies of all the validation batches.
         This is needed because the last batch can be smaller than the others,
         slightly skewing the metrics.
-
         Args:
             outs (List[Dict[str, Any]]): list of outputs of the validation step.
         """
@@ -630,14 +613,17 @@ class BaseMethod(pl.LightningModule):
         val_loss = weighted_mean(outs, "val_loss", "batch_size")
         val_acc1 = weighted_mean(outs, "val_acc1", "batch_size")
         val_acc5 = weighted_mean(outs, "val_acc5", "batch_size")
-
+        val_class_acc = per_class_weighted_mean(outs, "val_class_acc", "batch_size","val_ref_occurences")
+        #print(val_class_acc)
+        d = {str(index) + "_class_acc": value for index, value in enumerate(val_class_acc)}
         log = {"val_loss": val_loss, "val_acc1": val_acc1, "val_acc5": val_acc5}
-
         if self.knn_eval and not self.trainer.sanity_checking:
             val_knn_acc1, val_knn_acc5 = self.knn.compute()
             log.update({"val_knn_acc1": val_knn_acc1, "val_knn_acc5": val_knn_acc5})
-
+        log.update(d)
+        #print(d)
         self.log_dict(log, sync_dist=True)
+        #self.log_dict(d, sync_dist=True)
 
 
 class BaseMomentumMethod(BaseMethod):
@@ -653,7 +639,6 @@ class BaseMomentumMethod(BaseMethod):
         parameters, implements basic training and validation steps for the momentum backbone and
         classifier. Also implements momentum update using exponential moving average and cosine
         annealing of the weighting decrease coefficient.
-
         Args:
             base_tau_momentum (float): base value of the weighting decrease coefficient (should be
                 in [0,1]).
@@ -699,7 +684,6 @@ class BaseMomentumMethod(BaseMethod):
     @property
     def learnable_params(self) -> List[Dict[str, Any]]:
         """Adds momentum classifier parameters to the parameters of the base class.
-
         Returns:
             List[Dict[str, Any]]:
                 list of dicts containing learnable parameters and possible settings.
@@ -720,7 +704,6 @@ class BaseMomentumMethod(BaseMethod):
     @property
     def momentum_pairs(self) -> List[Tuple[Any, Any]]:
         """Defines base momentum pairs that will be updated using exponential moving average.
-
         Returns:
             List[Tuple[Any, Any]]: list of momentum pairs (two element tuples).
         """
@@ -730,11 +713,9 @@ class BaseMomentumMethod(BaseMethod):
     @staticmethod
     def add_model_specific_args(parent_parser: ArgumentParser) -> ArgumentParser:
         """Adds basic momentum arguments that are shared for all methods.
-
         Args:
             parent_parser (ArgumentParser): argument parser that is used to create a
                 argument group.
-
         Returns:
             ArgumentParser: same as the argument, used to avoid errors.
         """
@@ -759,10 +740,8 @@ class BaseMomentumMethod(BaseMethod):
     def momentum_forward(self, X: torch.Tensor) -> Dict[str, Any]:
         """Momentum forward method. Children methods should call this function,
         modify the ouputs (without deleting anything) and return it.
-
         Args:
             X (torch.Tensor): batch of images in tensor format.
-
         Returns:
             Dict: dict of logits and features.
         """
@@ -775,11 +754,9 @@ class BaseMomentumMethod(BaseMethod):
     def _shared_step_momentum(self, X: torch.Tensor, targets: torch.Tensor) -> Dict[str, Any]:
         """Forwards a batch of images X in the momentum backbone and optionally computes the
         classification loss, the logits, the features, acc@1 and acc@5 for of momentum classifier.
-
         Args:
             X (torch.Tensor): batch of images in tensor format.
             targets (torch.Tensor): batch of labels for X.
-
         Returns:
             Dict[str, Any]:
                 a dict containing the classification loss, logits, features, acc@1 and
@@ -793,8 +770,8 @@ class BaseMomentumMethod(BaseMethod):
             logits = self.momentum_classifier(feats)
 
             loss = F.cross_entropy(logits, targets, ignore_index=-1)
-            acc1, acc5 = accuracy_at_k(logits, targets, top_k=(1, 5))
-            out.update({"logits": logits, "loss": loss, "acc1": acc1, "acc5": acc5})
+            class_acc,ref_occurences,acc1, acc5 = accuracy_at_k(logits, targets, top_k=(1, 5),number_of_classes=self.num_classes)
+            out.update({"logits": logits, "loss": loss, "acc1": acc1, "acc5": acc5,"class_acc":class_acc,"ref_occurences":ref_occurences})
 
         return out
 
@@ -806,7 +783,6 @@ class BaseMomentumMethod(BaseMethod):
             batch (List[Any]): a batch of data in the format of [img_indexes, [X], Y], where
                 [X] is a list of size self.num_crops containing batches of images.
             batch_idx (int): index of the batch.
-
         Returns:
             Dict[str, Any]: a dict with the features of the momentum backbone and the classification
                 loss and logits of the momentum classifier.
@@ -853,7 +829,6 @@ class BaseMomentumMethod(BaseMethod):
     def on_train_batch_end(self, outputs: Dict[str, Any], batch: Sequence[Any], batch_idx: int):
         """Performs the momentum update of momentum pairs using exponential moving average at the
         end of the current training step if an optimizer step was performed.
-
         Args:
             outputs (Dict[str, Any]): the outputs of the training step.
             batch (Sequence[Any]): a batch of data in the format of [img_indexes, [X], Y], where
@@ -906,6 +881,8 @@ class BaseMomentumMethod(BaseMethod):
                 "momentum_val_loss": out["loss"],
                 "momentum_val_acc1": out["acc1"],
                 "momentum_val_acc5": out["acc5"],
+                "momentum_val_class_acc": out["class_acc"],
+                "momentum_val_ref_occurences": out["ref_occurences"],
             }
 
         return parent_metrics, metrics
@@ -928,10 +905,14 @@ class BaseMomentumMethod(BaseMethod):
             val_loss = weighted_mean(momentum_outs, "momentum_val_loss", "batch_size")
             val_acc1 = weighted_mean(momentum_outs, "momentum_val_acc1", "batch_size")
             val_acc5 = weighted_mean(momentum_outs, "momentum_val_acc5", "batch_size")
+            #val_class_acc = per_class_weighted_mean(momentum_outs, "momentum_val_class_acc", "batch_size","momentum_val_ref_occurences")
+            #d = {str(index) + "_class_acc": value for index, value in enumerate(val_class_acc)}
 
             log = {
                 "momentum_val_loss": val_loss,
                 "momentum_val_acc1": val_acc1,
                 "momentum_val_acc5": val_acc5,
             }
+            #log.update(d)
             self.log_dict(log, sync_dist=True)
+            #self.log_dict(d, sync_dist=True)
