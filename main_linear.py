@@ -64,6 +64,15 @@ def main():
         if cifar:
             backbone.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=2, bias=False)
             backbone.maxpool = nn.Identity()
+    # read content in os.path.join("trained_paths", str(args['nam'])+str(args["color_jitter_prob"]) file 
+    with open(os.path.join("training_model_paths", str(args.name) + '_trained_path.txt'), 'r') as f:
+        for line in f:
+            trained_path = line
+            break
+    files = os.listdir(trained_path)
+    for file in files :
+        if file.endswith(".ckpt"):
+            args.pretrained_feature_extractor = os.path.join(trained_path,file)
 
     assert (
         args.pretrained_feature_extractor.endswith(".ckpt")
