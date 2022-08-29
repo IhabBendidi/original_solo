@@ -1,5 +1,5 @@
 #!/bin/bash
-CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --dataset cifar100 --no_labels  \
+CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --dataset cifar10  --no_labels  \
     --backbone resnet18 \
     --data_dir ../../datasets \
     --max_epochs 1000 \
@@ -8,11 +8,13 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --d
     --optimizer sgd \
     --grad_clip_lars \
     --eta_lars 0.02 \
-    --exclude_bias_n_norm \
     --scheduler warmup_cosine \
-    --lr 1.0 \
+    --lr 0.6 \
+    --min_lr 0.0006 \
+    --warmup_start_lr 0.0 \
+    --warmup_epochs 11 \
     --classifier_lr 0.1 \
-    --weight_decay 1e-5 \
+    --weight_decay 1e-6 \
     --batch_size 512 \
     --num_workers 4 \
     --brightness 0.4 \
@@ -22,25 +24,22 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --d
     --gaussian_prob 0.0 0.0 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --nam nnbyol${1} \
+    --nam deepclusterv2${1} \
     --project Cifar_results \
     --entity labrats \
     --wandb \
     --offline \
     --save_checkpoint \
-    --method nnbyol \
-    --proj_output_dim 256 \
-    --proj_hidden_dim 4096 \
-    --pred_hidden_dim 4096 \
-    --base_tau_momentum 0.99 \
-    --final_tau_momentum 1.0 \
-    --momentum_classifier --color_jitter_prob ${1}
+    --method deepclusterv2 \
+    --proj_hidden_dim 2048 \
+    --proj_output_dim 128 \
+    --num_prototypes 3000 3000 3000 --color_jitter_prob ${1}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_linear.py \
-    --dataset cifar100 \
+    --dataset cifar10 \
     --backbone resnet18 \
     --data_dir ../../datasets \
-    --train_dir cifar100/train \
-    --val_dir cifar100/val \
+    --train_dir cifar10/train \
+    --val_dir cifar10/val \
     --max_epochs 100 \
     --devices 0 --accelerator gpu  --sync_batchnorm \
     --precision 16 \
@@ -51,7 +50,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_linear.py \
     --weight_decay 0 \
     --batch_size 256 \
     --num_workers 4 \
-    --nam nnbyol${1}  \
+    --nam deepclusterv2${1}  \
     --pretrained_feature_extractor lorepm_ipsum.ckpt \
     --project Cifar_results \
     --entity labrats \

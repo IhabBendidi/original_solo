@@ -1,5 +1,5 @@
 #!/bin/bash
-CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --dataset cifar100 --no_labels  \
+CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --dataset cifar10 --no_labels  \
     --backbone resnet18 \
     --data_dir ../../datasets \
     --max_epochs 1000 \
@@ -37,11 +37,11 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --d
     --cov_loss_weight 200.0 \
     --iternorm --color_jitter_prob ${1}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_linear.py \
-    --dataset cifar100 \
+    --dataset cifar10 \
     --backbone resnet18 \
     --data_dir ../../datasets \
-    --train_dir cifar100/train \
-    --val_dir cifar100/val \
+    --train_dir cifar10/train \
+    --val_dir cifar10/val \
     --max_epochs 100 \
     --devices 0 --accelerator gpu  --sync_batchnorm \
     --precision 16 \
