@@ -109,6 +109,7 @@ class LinearModel(pl.LightningModule):
         self.warmup_epochs = warmup_epochs
         self.lr_decay_steps = lr_decay_steps
         self.no_channel_last = no_channel_last
+        self.num_classes = num_classes
 
         self._num_training_steps = None
 
@@ -303,7 +304,7 @@ class LinearModel(pl.LightningModule):
 
         loss = F.cross_entropy(out, target)
 
-        class_acc,ref_occurences,acc1, acc5 = accuracy_at_k(out, target, top_k=(1, 5))
+        class_acc,ref_occurences,acc1, acc5 = accuracy_at_k(out, target, top_k=(1, 5),number_of_classes=self.num_classes)
         return batch_size, loss, acc1, acc5, class_acc, ref_occurences
 
     def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:

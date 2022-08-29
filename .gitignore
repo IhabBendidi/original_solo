@@ -17,6 +17,9 @@ datasets/
 *.tar
 *.pkl
 
+bash_files/*/trained_models/
+bash_files/*/training_model_paths/*
+bash_files/*/wandb/
 bash_files/*.png
 bash_files/*.jpg
 bash_files/*.jpeg

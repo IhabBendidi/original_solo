@@ -219,7 +219,7 @@ def main():
         trainer.fit(model, ckpt_path=ckpt_path, datamodule=dali_datamodule)
     else:
         trainer.fit(model, train_loader, val_loader, ckpt_path=ckpt_path)
-    with open(os.path.join("training_model_paths", str(args.name)+ '_trained_path.txt'), 'a') as f:
+    with open(os.path.join("training_model_paths", str(args.name)+ '_trained_path.txt'), 'w') as f:
         f.write(str(ckpt.path))
 
 if __name__ == "__main__":
