@@ -26,7 +26,7 @@ from .poolformer import (
     poolformer_m36,
     poolformer_m48,
 )
-from .resnet import resnet18, resnet50
+from .resnet import resnet18, resnet50, resnet34, resnet101, resnet152
 from .swin import swin_tiny, swin_small, swin_base, swin_large
 from .vit import vit_tiny, vit_small, vit_base, vit_large
 from .wide_resnet import wide_resnet28w2, wide_resnet28w8
@@ -34,6 +34,9 @@ from .wide_resnet import wide_resnet28w2, wide_resnet28w8
 __all__ = [
     "resnet18",
     "resnet50",
+    "resnet34",
+    "resnet101",
+    "resnet152",
     "vit_tiny",
     "vit_small",
     "vit_base",

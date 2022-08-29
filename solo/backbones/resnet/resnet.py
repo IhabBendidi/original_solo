@@ -19,5 +19,7 @@
 
 from torchvision.models import resnet18
 from torchvision.models import resnet50
-
-__all__ = ["resnet18", "resnet50"]
+from torchvision.models import resnet34
+from torchvision.models import resnet101
+from torchvision.models import resnet152
+__all__ = ["resnet18", "resnet50", "resnet34", "resnet101", "resnet152"]
