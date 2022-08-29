@@ -6,7 +6,6 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --d
     --devices 0 --accelerator gpu  --sync_batchnorm \
     --precision 16 \
     --optimizer sgd \
-    --lars \
     --grad_clip_lars \
     --eta_lars 0.02 \
     --exclude_bias_n_norm \

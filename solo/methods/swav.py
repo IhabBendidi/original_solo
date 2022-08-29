@@ -221,7 +221,7 @@ class SwAV(BaseMethod):
 
         self.log("train_swav_loss", swav_loss, on_epoch=True, sync_dist=True)
 
-        return swav_loss + class_loss
+        return swav_loss #+ class_loss
 
     def on_after_backward(self):
         """Zeroes the gradients of the prototypes."""

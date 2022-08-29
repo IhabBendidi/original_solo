@@ -131,4 +131,4 @@ class VICReg(BaseMethod):
 
         self.log("train_vicreg_loss", vicreg_loss, on_epoch=True, sync_dist=True)
 
-        return vicreg_loss + class_loss
+        return vicreg_loss #+ class_loss

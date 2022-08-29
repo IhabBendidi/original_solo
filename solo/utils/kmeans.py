@@ -162,7 +162,7 @@ class KMeans:
                     indexes_all = local_memory_index
 
                 # log assignments
-                assignments[i_K][indexes_all] = assignments_all
+                assignments[i_K][indexes_all] = assignments_all.cpu()
 
                 # next memory bank to use
                 j = (j + 1) % self.num_large_crops

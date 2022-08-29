@@ -116,4 +116,4 @@ class BarlowTwins(BaseMethod):
 
         self.log("train_barlow_loss", barlow_loss, on_epoch=True, sync_dist=True)
 
-        return barlow_loss + class_loss
+        return barlow_loss #+ class_loss

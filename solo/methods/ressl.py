@@ -194,4 +194,4 @@ class ReSSL(BaseMomentumMethod):
         # dequeue and enqueue
         self.dequeue_and_enqueue(k)
 
-        return ressl_loss + class_loss
+        return ressl_loss #+ class_loss

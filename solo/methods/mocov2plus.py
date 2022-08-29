@@ -198,4 +198,4 @@ class MoCoV2Plus(BaseMomentumMethod):
 
         self.log("train_nce_loss", nce_loss, on_epoch=True, sync_dist=True)
 
-        return nce_loss + class_loss
+        return nce_loss #+ class_loss

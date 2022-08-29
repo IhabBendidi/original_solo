@@ -214,4 +214,4 @@ class NNCLR(BaseMethod):
         }
         self.log_dict(metrics, on_epoch=True, sync_dist=True)
 
-        return nnclr_loss + class_loss
+        return nnclr_loss #+ class_loss

@@ -298,7 +298,7 @@ class DINO(BaseMomentumMethod):
 
         self.log("dino_loss", dino_loss, on_epoch=True, sync_dist=True)
 
-        return dino_loss + class_loss
+        return dino_loss #+ class_loss
 
     def on_after_backward(self):
         """Performs gradient clipping and zeros the gradients on the last layer (prototypes)."""
