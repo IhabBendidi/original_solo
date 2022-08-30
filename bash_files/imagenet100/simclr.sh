@@ -1,7 +1,7 @@
 #!/bin/bash
-CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --dataset imagenet100 --no_labels  \
+CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset imagenet100   \
     --backbone resnet18 \
-    --data_dir ../../datasets \
+    --data_dir datasets \
     --train_dir imagenet100/train \
     --val_dir imagenet100/val \
     --max_epochs 400 \
@@ -33,10 +33,10 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --d
     --temperature 0.2 \
     --proj_hidden_dim 2048 \
     --proj_output_dim 256 --color_jitter_prob ${1} --dali
-CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_linear.py \
+CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset imagenet100 \
     --backbone resnet18 \
-    --data_dir ../../datasets \
+    --data_dir datasets \
     --train_dir imagenet100/train \
     --val_dir imagenet100/val \
     --max_epochs 100 \

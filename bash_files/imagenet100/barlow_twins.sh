@@ -1,6 +1,6 @@
 #!/bin/bash
-CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py    --dataset imagenet100     --backbone resnet18  \
-   --data_dir ../../datasets  --train_dir imagenet100/train \
+CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py    --dataset imagenet100     --backbone resnet18  \
+   --data_dir datasets  --train_dir imagenet100/train \
     --val_dir imagenet100/val \
        --max_epochs 400     --devices 0 --accelerator gpu  --sync_batchnorm    \
   --precision 16     --num_workers 4     --optimizer sgd         --grad_clip_lars   \
@@ -11,11 +11,11 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py    
                --nam barlow_twins${1}     --project Cifar_results     --entity labrats  \
                   --wandb  --offline    --save_checkpoint    --dali  --method barlow_twins  \
                      --proj_hidden_dim 2048     --proj_output_dim 2048     --scale_loss 0.1 \
-                      --no_labels  --color_jitter_prob ${1}
-CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_linear.py \
+                        --color_jitter_prob ${1}
+CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset imagenet100 \
     --backbone resnet18 \
-    --data_dir ../../datasets \
+    --data_dir datasets \
     --train_dir imagenet100/train \
     --val_dir imagenet100/val \
     --max_epochs 100 \
