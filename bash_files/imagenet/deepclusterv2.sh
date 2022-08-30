@@ -1,8 +1,10 @@
 #!/bin/bash
-CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../../main_pretrain.py --dataset cifar100  --no_labels  \
-    --backbone resnet152 \
-    --data_dir ../../../datasets \
-    --max_epochs 1000 \
+CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_pretrain.py --dataset imagenet  --no_labels  \
+    --backbone resnet50 \
+    --data_dir ../../datasets \
+    --train_dir imagenet/train \
+    --val_dir imagenet/val \
+    --max_epochs 100 \
     --devices 0 --accelerator gpu  --sync_batchnorm \
     --precision 16 \
     --optimizer sgd \
@@ -22,7 +24,6 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../../main_pretrain.py 
     --saturation 0.2 \
     --hue 0.1 \
     --gaussian_prob 0.0 0.0 \
-    --crop_size 32 \
     --num_crops_per_aug 1 1 \
     --nam deepclusterv2${1} \
     --project Cifar_results \
@@ -33,13 +34,13 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../../main_pretrain.py 
     --method deepclusterv2 \
     --proj_hidden_dim 2048 \
     --proj_output_dim 128 \
-    --num_prototypes 3000 3000 3000 --color_jitter_prob ${1}
-CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../../main_linear.py \
-    --dataset cifar100 \
-    --backbone resnet152 \
-    --data_dir ../../../datasets \
-    --train_dir cifar100/train \
-    --val_dir cifar100/val \
+    --num_prototypes 3000 3000 3000 --color_jitter_prob ${1} --dali
+CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../main_linear.py \
+    --dataset imagenet \
+    --backbone resnet50 \
+    --data_dir ../../datasets \
+    --train_dir imagenet/train \
+    --val_dir imagenet/val \
     --max_epochs 100 \
     --devices 0 --accelerator gpu  --sync_batchnorm \
     --precision 16 \
@@ -54,4 +55,4 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 ../../../main_linear.py \
     --pretrained_feature_extractor lorepm_ipsum.ckpt \
     --project Cifar_results \
     --entity labrats \
-    --wandb --offline
+    --wandb --offline --dali
