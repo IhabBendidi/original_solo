@@ -33,7 +33,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --method deepclusterv2 \
     --proj_hidden_dim 2048 \
     --proj_output_dim 128 \
-    --num_prototypes 3000 3000 3000 --color_jitter_prob ${1}
+    --num_prototypes 3000 3000 3000 --color_jitter_prob ${1} --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset cifar10 \
     --backbone resnet18 \

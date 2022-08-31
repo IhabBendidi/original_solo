@@ -35,7 +35,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --proj_output_dim 128 \
     --num_prototypes 3000 \
     --epoch_queue_starts 50 \
-    --freeze_prototypes_epochs 2 --color_jitter_prob ${1} --dali
+    --freeze_prototypes_epochs 2 --color_jitter_prob ${1} --dali --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset imagenet \
     --backbone resnet50 \

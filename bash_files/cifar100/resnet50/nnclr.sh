@@ -34,7 +34,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py  --datase
     --proj_hidden_dim 2048 \
     --pred_hidden_dim 4096 \
     --proj_output_dim 256 \
-    --queue_size 65536 --color_jitter_prob ${1}
+    --queue_size 65536 --color_jitter_prob ${1} --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset cifar100 \
     --backbone resnet50 \

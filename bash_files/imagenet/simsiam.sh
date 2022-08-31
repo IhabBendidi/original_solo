@@ -31,7 +31,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --method simsiam \
     --proj_hidden_dim 2048 \
     --pred_hidden_dim 512 \
-    --proj_output_dim 2048 --color_jitter_prob ${1} --dali
+    --proj_output_dim 2048 --color_jitter_prob ${1} --dali --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset imagenet \
     --backbone resnet50 \

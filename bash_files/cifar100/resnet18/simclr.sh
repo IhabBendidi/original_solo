@@ -32,7 +32,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --method simclr \
     --temperature 0.2 \
     --proj_hidden_dim 2048 \
-    --proj_output_dim 256 --color_jitter_prob ${1}
+    --proj_output_dim 256 --color_jitter_prob ${1} --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset cifar100 \
     --backbone resnet18 \

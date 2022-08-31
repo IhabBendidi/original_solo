@@ -35,7 +35,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --proj_output_dim 2048 \
     --sim_loss_weight 25.0 \
     --var_loss_weight 25.0 \
-    --cov_loss_weight 1.0 --color_jitter_prob ${1} --dali
+    --cov_loss_weight 1.0 --color_jitter_prob ${1} --dali --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset imagenet \
     --backbone resnet50 \

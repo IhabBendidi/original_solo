@@ -34,7 +34,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --pred_hidden_dim 4096 \
     --base_tau_momentum 0.99 \
     --final_tau_momentum 1.0 \
-    --momentum_classifier --color_jitter_prob ${1}
+    --momentum_classifier --color_jitter_prob ${1} --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset cifar10 \
     --backbone resnet18 \

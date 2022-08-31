@@ -11,7 +11,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py    --data
                --nam barlow_twins${1}     --project Cifar_results     --entity labrats  \
                   --wandb  --offline    --save_checkpoint    --dali  --method barlow_twins  \
                      --proj_hidden_dim 2048     --proj_output_dim 2048     --scale_loss 0.1 \
-                        --color_jitter_prob ${1}
+                        --color_jitter_prob ${1} --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset imagenet100 \
     --backbone resnet18 \
