@@ -57,9 +57,10 @@ from solo.utils.pretrain_dataloader import (
 
 
 def main():
-    seed_everything(5)
+    
 
     args = parse_args_pretrain()
+    seed_everything(args.seed)
 
     assert args.method in METHODS, f"Choose from {METHODS.keys()}"
 
