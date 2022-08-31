@@ -19,6 +19,7 @@
 
 import os
 from pprint import pprint
+import time
 
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.callbacks import LearningRateMonitor
@@ -56,9 +57,10 @@ from solo.utils.pretrain_dataloader import (
 
 
 def main():
-    seed_everything(5)
+    
 
     args = parse_args_pretrain()
+    seed_everything(args.seed)
 
     assert args.method in METHODS, f"Choose from {METHODS.keys()}"
 
@@ -218,7 +220,11 @@ def main():
         trainer.fit(model, ckpt_path=ckpt_path, datamodule=dali_datamodule)
     else:
         trainer.fit(model, train_loader, val_loader, ckpt_path=ckpt_path)
-
+    with open(os.path.join("training_model_paths", str(args.name)+ '_trained_path.txt'), 'w') as f:
+        f.write(str(ckpt.path))
 
 if __name__ == "__main__":
+    start_time = time.time()
     main()
+    print("--- %s hours ---" % ((time.time() - start_time)/3600))
+

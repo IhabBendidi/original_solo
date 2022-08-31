@@ -136,4 +136,4 @@ class VIbCReg(BaseMethod):
 
         self.log("train_vibcreg_loss", vibcreg_loss, on_epoch=True, sync_dist=True)
 
-        return vibcreg_loss + class_loss
+        return vibcreg_loss #+ class_loss

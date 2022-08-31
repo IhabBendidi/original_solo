@@ -142,4 +142,4 @@ class SimSiam(BaseMethod):
         }
         self.log_dict(metrics, on_epoch=True, sync_dist=True)
 
-        return neg_cos_sim + class_loss
+        return neg_cos_sim #+ class_loss

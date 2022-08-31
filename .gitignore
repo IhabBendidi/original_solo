@@ -17,6 +17,10 @@ datasets/
 *.tar
 *.pkl
 
+bash_files/*.txt
+bash_files/*/training_model_paths/*.txt
+bash_files/*/resnet*/training_model_paths/*.txt
+bash_files/*/wandb/
 bash_files/*.png
 bash_files/*.jpg
 bash_files/*.jpeg
@@ -36,6 +40,8 @@ tests/*.jpeg
 zoo/*.png
 zoo/*.jpg
 zoo/*.jpeg
+*errors*/
+*terminal*/
 
 saved_models/
 model_storage*/

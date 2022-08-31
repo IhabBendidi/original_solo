@@ -19,6 +19,19 @@
 
 from .resnet import resnet18 as default_resnet18
 from .resnet import resnet50 as default_resnet50
+from .resnet import resnet34 as default_resnet34
+from .resnet import resnet101 as default_resnet101
+from .resnet import resnet152 as default_resnet152
+
+def resnet34(method, *args, **kwargs):
+    return default_resnet34(*args, **kwargs)
+
+def resnet101(method, *args, **kwargs):
+    return default_resnet101(*args, **kwargs)
+
+def resnet152(method, *args, **kwargs):
+    return default_resnet152(*args, **kwargs)
+
 
 
 def resnet18(method, *args, **kwargs):
@@ -29,4 +42,4 @@ def resnet50(method, *args, **kwargs):
     return default_resnet50(*args, **kwargs)
 
 
-__all__ = ["resnet18", "resnet50"]
+__all__ = ["resnet18", "resnet50", "resnet34", "resnet101", "resnet152"]

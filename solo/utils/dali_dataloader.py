@@ -37,7 +37,6 @@ from solo.utils.pretrain_dataloader import FullTransformPipeline, NCropAugmentat
 class Mux:
     def __init__(self, prob: float):
         """Implements mutex operation for dali in order to support probabilitic augmentations.
-
         Args:
             prob (float): probability value
         """
@@ -54,7 +53,6 @@ class Mux:
 class RandomGrayScaleConversion:
     def __init__(self, prob: float = 0.2, device: str = "gpu"):
         """Converts image to greyscale with probability.
-
         Args:
             prob (float, optional): probability of conversion. Defaults to 0.2.
             device (str, optional): device on which the operation will be performed.
@@ -83,7 +81,6 @@ class RandomColorJitter:
         device: str = "gpu",
     ):
         """Applies random color jittering with probability.
-
         Args:
             brightness (float): brightness value for samplying uniformly
                 in [max(0, 1 - brightness), 1 + brightness].
@@ -140,7 +137,6 @@ class RandomColorJitter:
 class RandomGaussianBlur:
     def __init__(self, prob: float = 0.5, window_size: int = 23, device: str = "gpu"):
         """Applies random gaussian blur with probability.
-
         Args:
             prob (float, optional): probability of applying random gaussian blur. Defaults to 0.5.
             window_size (int, optional): window size for gaussian blur. Defaults to 23.
@@ -162,7 +158,6 @@ class RandomGaussianBlur:
 class RandomSolarize:
     def __init__(self, threshold: int = 128, prob: float = 0.0):
         """Applies random solarization with probability.
-
         Args:
             threshold (int, optional): threshold for inversion. Defaults to 128.
             prob (float, optional): probability of solarization. Defaults to 0.0.
@@ -194,11 +189,9 @@ class NormalPipelineBuilder:
         data_fraction: float = -1.0,
     ):
         """Initializes the pipeline for validation or linear eval training.
-
         If validation is set to True then images will only be resized to 256px and center cropped
         to 224px, otherwise random resized crop, horizontal flip are applied. In both cases images
         are normalized.
-
         Args:
             data_path (str): directory that contains the data.
             batch_size (int): batch size.
@@ -349,7 +342,6 @@ class ImagenetTransform:
         crop_size: int = 224,
     ):
         """Applies Imagenet transformations to a batch of images.
-
         Args:
             device (str): device on which the operations will be performed.
             brightness (float): sampled uniformly in [max(0, 1 - brightness), 1 + brightness].
@@ -452,7 +444,6 @@ class CustomTransform:
     ):
         """Applies Custom transformations.
         If you want to do exoteric augmentations, you can just re-write this class.
-
         Args:
             device (str): device on which the operations will be performed.
             brightness (float): sampled uniformly in [max(0, 1 - brightness), 1 + brightness].
@@ -551,7 +542,6 @@ class PretrainPipelineBuilder:
         data_fraction: float = -1.0,
     ):
         """Builder for a pretrain pipeline with Nvidia DALI.
-
         Args:
             data_path (str): directory that contains the data.
             batch_size (int): batch size.
@@ -584,6 +574,15 @@ class PretrainPipelineBuilder:
         self.device = device
 
         data_path = Path(data_path)
+
+        # check if cifar-100-python folder exists
+
+        
+
+        
+        
+
+
 
         # manually load files and labels
         if no_labels:
@@ -712,7 +711,6 @@ class PretrainWrapper(BaseWrapper):
         **kwargs,
     ):
         """Adds indices to a batch fetched from the parent.
-
         Args:
             model_batch_size (int): batch size.
             model_rank (int): rank of the current process.
@@ -795,7 +793,6 @@ class PretrainDALIDataModule(pl.LightningDataModule):
     ):
 
         """DataModule for pretrain data using Nvidia DALI.
-
         Args:
             dataset (str): dataset name.
             data_dir (Union[str, Path]): path where to download/locate the dataset.
@@ -814,7 +811,6 @@ class PretrainDALIDataModule(pl.LightningDataModule):
             encode_indexes_into_labels (bool, optional). Encodes instance indexes
                 together with labels. Allows user to access the true instance index.
                 Defaults to False.
-
         """
 
         super().__init__()
@@ -845,7 +841,7 @@ class PretrainDALIDataModule(pl.LightningDataModule):
         self.encode_indexes_into_labels = encode_indexes_into_labels
 
         # handle custom data by creating the needed pipeline
-        if dataset in ["imagenet100", "imagenet"]:
+        if dataset in ["imagenet100", "imagenet","cifar10","cifar100"]:
             transform_pipeline = ImagenetTransform
         elif dataset == "custom":
             transform_pipeline = CustomTransform
@@ -960,7 +956,6 @@ class ClassificationDALIDataModule(pl.LightningDataModule):
         dali_device: str = "gpu",
     ):
         """DataModule for classification data using Nvidia DALI.
-
         Args:
             dataset (str): dataset name.
             data_dir (Union[str, Path]): path where to download/locate the dataset.
@@ -993,7 +988,7 @@ class ClassificationDALIDataModule(pl.LightningDataModule):
         assert dali_device in ["gpu", "cpu"]
 
         # handle custom data by creating the needed pipeline
-        if dataset in ["imagenet100", "imagenet"]:
+        if dataset in ["imagenet100", "imagenet","cifar10","cifar100"]:
             self.pipeline_class = NormalPipelineBuilder
         elif dataset == "custom":
             self.pipeline_class = CustomNormalPipelineBuilder

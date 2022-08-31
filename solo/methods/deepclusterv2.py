@@ -208,4 +208,4 @@ class DeepClusterV2(BaseMethod):
 
         self.log("train_deepcluster_loss", deepcluster_loss, on_epoch=True, sync_dist=True)
 
-        return deepcluster_loss + class_loss
+        return deepcluster_loss #+ class_loss

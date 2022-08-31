@@ -215,7 +215,7 @@ def additional_setup_pretrain(args: Namespace):
         del args.patch_size
 
     if args.dali:
-        assert args.dataset in ["imagenet100", "imagenet", "custom"]
+        assert args.dataset in ["imagenet100", "imagenet", "custom","cifar10", "cifar100"]
 
     args.extra_optimizer_args = {}
     if args.optimizer == "sgd":
