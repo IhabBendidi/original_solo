@@ -1,5 +1,5 @@
 #!/bin/bash
-CUDA_VISIBLE_DEVICES=1 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py    --dataset cifar10     --backbone resnet18  \
+CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py    --dataset cifar10     --backbone resnet18  \
    --data_dir datasets     --max_epochs 1000     --devices 0 --accelerator gpu  --sync_batchnorm    \
   --precision 16     --num_workers 4     --optimizer sgd         --grad_clip_lars   \
     --eta_lars 0.02     --exclude_bias_n_norm     --scheduler warmup_cosine   \
@@ -10,7 +10,7 @@ CUDA_VISIBLE_DEVICES=1 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py    --data
                   --wandb  --offline    --save_checkpoint     --method barlow_twins  \
                      --proj_hidden_dim 2048     --proj_output_dim 2048     --scale_loss 0.1 \
                       --no_labels  --color_jitter_prob ${1} --seed ${2}
-CUDA_VISIBLE_DEVICES=1 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
+CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset cifar10 \
     --backbone resnet18 \
     --data_dir datasets \
