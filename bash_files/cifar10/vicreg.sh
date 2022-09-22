@@ -17,7 +17,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --crop_size 32 \
     --min_scale 0.2 \
     --brightness 0.4 \
-    --contrast 0.4 \
+    --contrast ${1} \
     --saturation 0.2 \
     --hue 0.1 \
     --solarization_prob 0.0 \
@@ -35,7 +35,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --proj_output_dim 2048 \
     --sim_loss_weight 25.0 \
     --var_loss_weight 25.0 \
-    --cov_loss_weight 1.0 --color_jitter_prob ${1} --seed ${2}
+    --cov_loss_weight 1.0 --color_jitter_prob 0.8 --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset cifar10 \
     --backbone resnet18 \

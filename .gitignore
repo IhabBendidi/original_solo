@@ -16,7 +16,7 @@ datasets/
 *.ckpt
 *.tar
 *.pkl
-
+training_model_paths/*.txt
 bash_files/*.txt
 bash_files/*/training_model_paths/*.txt
 bash_files/*/resnet*/training_model_paths/*.txt

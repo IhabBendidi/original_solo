@@ -1,1 +1,1 @@
-trained_models/barlow_twins/42vqoewz
+trained_models/barlow_twins/htiummcq
