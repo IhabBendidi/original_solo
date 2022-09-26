@@ -12,8 +12,8 @@ for s in 5 6 7; do
             echo "#SBATCH --cpus-per-task=6" >> batch_script.slurm
             echo "#SBATCH --hint=nomultithread" >> batch_script.slurm
             echo "#SBATCH --time=16:40:00" >> batch_script.slurm
-            echo "#SBATCH --output=./terminal/"$d"_"$s"_"$v"_contrast%j.out " >> batch_script.slurm
-            echo "#SBATCH --error=./errors/"$d"_"$s"_"$v"_contrast%j.out" >> batch_script.slurm
+            echo "#SBATCH --output=./terminal/"$d"_"$s"_"$v"_hue%j.out " >> batch_script.slurm
+            echo "#SBATCH --error=./errors/"$d"_"$s"_"$v"_hue%j.out" >> batch_script.slurm
             echo "module load pytorch-gpu/py3/1.7.1" >> batch_script.slurm
             echo "conda deactivate" >> batch_script.slurm
             echo "conda activate clean" >> batch_script.slurm

@@ -6,12 +6,12 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py    --data
   --precision 16     --num_workers 4     --optimizer sgd         --grad_clip_lars   \
     --eta_lars 0.02     --exclude_bias_n_norm     --scheduler warmup_cosine   \
       --lr 0.8     --weight_decay 1e-4     --batch_size 128   \
-        --brightness 0.4     --contrast 0.4     --saturation 0.2     --hue 0.1  \
+        --brightness 0.4     --contrast 0.4     --saturation 0.2     --hue ${1}  \
            --gaussian_prob 0.0 0.0              --num_crops_per_aug 1 1 \
                --nam barlow_twins${1}     --project Cifar_results     --entity labrats  \
                   --wandb  --offline    --save_checkpoint    --dali  --method barlow_twins  \
                      --proj_hidden_dim 2048     --proj_output_dim 2048     --scale_loss 0.1 \
-                        --color_jitter_prob ${1} --seed ${2}
+                        --color_jitter_prob 0.8 --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset imagenet100 \
     --backbone resnet18 \

@@ -20,7 +20,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --brightness 0.4 \
     --contrast 0.4 \
     --saturation 0.2 \
-    --hue 0.1 \
+    --hue ${1} \
     --gaussian_prob 0.0 0.0 \
     --num_crops_per_aug 1 1 \
     --nam dino${1} \
@@ -35,7 +35,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --num_prototypes 4096 \
     --base_tau_momentum 0.9995 \
     --final_tau_momentum 1.0 \
-    --momentum_classifier --color_jitter_prob ${1} --dali --seed ${2}
+    --momentum_classifier --color_jitter_prob 0.8 --dali --seed ${2}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset imagenet100 \
     --backbone resnet18 \
