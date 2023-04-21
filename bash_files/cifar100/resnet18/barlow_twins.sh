@@ -6,10 +6,10 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py    --data
       --lr 0.3     --weight_decay 1e-4     --batch_size 512   \
         --brightness 0.4     --contrast 0.4     --saturation 0.2     --hue 0.1  \
            --gaussian_prob 0.0 0.0         --crop_size 32     --num_crops_per_aug 1 1 \
-               --nam barlow_twins${1}     --project Cifar_results     --entity labrats  \
+               --nam barlow_twins_normal_transform${1}     --project Cifar_results     --entity labrats  \
                   --wandb  --offline    --save_checkpoint     --method barlow_twins  \
                      --proj_hidden_dim 2048     --proj_output_dim 2048     --scale_loss 0.1 \
-                      --no_labels  --color_jitter_prob ${1} --seed ${2}
+                      --no_labels  --color_jitter_prob 0.8 --seed ${1}
 CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset cifar100 \
     --backbone resnet18 \
@@ -26,7 +26,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --weight_decay 0 \
     --batch_size 256 \
     --num_workers 4 \
-    --nam barlow_twins${1}  \
+    --nam barlow_twins_normal_transform${1}   \
     --pretrained_feature_extractor lorepm_ipsum.ckpt \
     --project Cifar_results \
     --entity labrats \
