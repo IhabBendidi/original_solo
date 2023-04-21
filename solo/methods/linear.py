@@ -28,9 +28,10 @@ import torch.nn.functional as F
 from pl_bolts.optimizers.lr_scheduler import LinearWarmupCosineAnnealingLR
 from solo.methods.base import BaseMethod
 from solo.utils.lars import LARS
-from solo.utils.metrics import accuracy_at_k, weighted_mean,per_class_weighted_mean
+from solo.utils.metrics import accuracy_at_k, weighted_mean,per_class_weighted_mean,get_confusion_matrix
 from solo.utils.misc import compute_dataset_size
 from torch.optim.lr_scheduler import ExponentialLR, MultiStepLR, ReduceLROnPlateau
+import pandas as pd
 
 
 class LinearModel(pl.LightningModule):
@@ -51,6 +52,7 @@ class LinearModel(pl.LightningModule):
     def __init__(
         self,
         backbone: nn.Module,
+        args: Dict[str, Any],
         num_classes: int,
         max_epochs: int,
         batch_size: int,
@@ -112,6 +114,7 @@ class LinearModel(pl.LightningModule):
         self.num_classes = num_classes
 
         self._num_training_steps = None
+        self.args = args
 
         # all the other parameters
         self.extra_args = kwargs
@@ -305,7 +308,7 @@ class LinearModel(pl.LightningModule):
         loss = F.cross_entropy(out, target)
 
         class_acc,ref_occurences,acc1, acc5 = accuracy_at_k(out, target, top_k=(1, 5),number_of_classes=self.num_classes)
-        return batch_size, loss, acc1, acc5, class_acc, ref_occurences
+        return batch_size, loss, acc1, acc5, class_acc, ref_occurences,out,target
 
     def training_step(self, batch: torch.Tensor, batch_idx: int) -> torch.Tensor:
         """Performs the training step for the linear eval.
@@ -321,7 +324,7 @@ class LinearModel(pl.LightningModule):
         # set backbone to eval mode
         self.backbone.eval()
 
-        _, loss, acc1, acc5, class_acc, ref_occurences = self.shared_step(batch, batch_idx)
+        _, loss, acc1, acc5, class_acc, ref_occurences,_,_ = self.shared_step(batch, batch_idx)
 
         log = {"train_loss": loss, "train_acc1": acc1, "train_acc5": acc5}
         self.log_dict(log, on_epoch=True, sync_dist=True)
@@ -340,7 +343,7 @@ class LinearModel(pl.LightningModule):
                 the classification loss and accuracies.
         """
 
-        batch_size, loss, acc1, acc5,class_acc, ref_occurences = self.shared_step(batch, batch_idx)
+        batch_size, loss, acc1, acc5,class_acc, ref_occurences, logits,targets = self.shared_step(batch, batch_idx)
 
         results = {
             "batch_size": batch_size,
@@ -349,6 +352,8 @@ class LinearModel(pl.LightningModule):
             "val_acc5": acc5,
             "val_class_acc": class_acc,
             "val_ref_occurences": ref_occurences,
+            "val_logits": logits,
+            "val_targets": targets,
         }
         return results
 
@@ -365,6 +370,19 @@ class LinearModel(pl.LightningModule):
         val_acc1 = weighted_mean(outs, "val_acc1", "batch_size")
         val_acc5 = weighted_mean(outs, "val_acc5", "batch_size")
         val_class_acc = per_class_weighted_mean(outs, "val_class_acc", "batch_size","val_ref_occurences")
+        # Make a confusion matrix using the values of "targets" and "logits " in outs
+        # outs is a list that contains dictionaries of each batch, each disctionaries containing the targets and logits
+        confusion_mat,n_classes = get_confusion_matrix(outs)
+        class_labels = [f"Class {i}" for i in range(n_classes)]
+        df_cm = pd.DataFrame(confusion_mat, index=class_labels, columns=class_labels)
+
+
+
+
+        # Save the DataFrame as a CSV file
+        df_cm.to_csv(os.path.join("training_model_paths", str(self.args.name)+ '_'  + str(self.args.dataset) + '_' + str(self.args.seed) + 'confusion_matrix.csv'))
+
+
         d = {str(index) + "_class_acc": value for index, value in enumerate(val_class_acc)}
 
         log = {"val_loss": val_loss, "val_acc1": val_acc1, "val_acc5": val_acc5}

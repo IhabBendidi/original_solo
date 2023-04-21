@@ -23,6 +23,7 @@ from sklearn.metrics import confusion_matrix
 import torch
 import numpy as np
 import torch.nn.functional as F
+from sklearn.metrics import confusion_matrix
 
 
 
@@ -308,5 +309,20 @@ def per_class_weighted_mean(outputs: List[Dict], key: str, batch_size_key: str,c
 
 
 
-    
+def get_confusion_matrix(outs):
+    all_targets = []
+    all_preds = []
+
+    for batch in outs:
+        targets = batch['val_targets'].cpu().numpy()
+        logits = batch['val_logits'].cpu().numpy()
+        preds = np.argmax(logits, axis=1)
+
+        all_targets.extend(targets)
+        all_preds.extend(preds)
+
+    cm = confusion_matrix(all_targets, all_preds)
+    n_classes = len(np.unique(all_targets))
+
+    return cm  ,n_classes  
 

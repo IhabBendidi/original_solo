@@ -21,6 +21,7 @@ import os
 import random
 from pathlib import Path
 from typing import Any, Callable, List, Optional, Sequence, Type, Union
+import numpy as np
 
 import torch
 import torchvision
@@ -29,6 +30,145 @@ from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 from torchvision import transforms
 from torchvision.datasets import STL10, ImageFolder
+
+superclasses = {
+    "aquatic mammals": ["beaver", "dolphin", "otter", "seal", "whale"],
+    "fish": ["aquarium", "flatfish", "ray", "shark", "trout"],
+    "flowers": ["orchid", "poppy", "rose", "sunflower", "tulip"],
+    "food containers": ["bottle", "bowl", "can", "cup", "plate"],
+    "fruit and vegetables": ["apple", "mushroom", "orange", "pear", "sweet"],
+    "household electrical devices": ["clock", "keyboard", "lamp", "telephone", "television"],
+    "household furniture": ["bed", "chair", "couch", "table", "wardrobe"],
+    "insects": ["bee", "beetle", "butterfly", "caterpillar", "cockroach"],
+    "large carnivores": ["bear", "leopard", "lion", "tiger", "wolf"],
+    "large man-made outdoor things": ["bridge", "castle", "house", "road", "skyscraper"],
+    "large natural outdoor scenes": ["cloud", "forest", "mountain", "plain", "sea"],
+    "large omnivores and herbivores": ["camel", "cattle", "chimpanzee", "elephant", "kangaroo"],
+    "medium-sized mammals": ["fox", "porcupine", "possum", "raccoon", "skunk"],
+    "non-insect invertebrates": ["cra", "lobster", "snail", "spider", "worm"],
+    "people": ["baby", "boy", "girl", "man", "woman"],
+    "reptiles": ["crocodile", "dinosaur", "lizard", "snake", "turtle"],
+    "small mammals": ["hamster", "mouse", "rabbit", "shrew", "squirrel"],
+    "trees": ["maple", "oak", "palm", "pine", "willow"],
+    "vehicles 1": ["bicycle", "bus", "motorcycle", "pickup", "train"],
+    "vehicles 2": ["lawn", "rocket", "streetcar", "tank", "tractor"]
+}
+terms = ['apple',
+ 'aquarium',
+ 'baby',
+ 'bear',
+ 'beaver',
+ 'bed',
+ 'bee',
+ 'beetle',
+ 'bicycle',
+ 'bottle',
+ 'bowl',
+ 'boy',
+ 'bridge',
+ 'bus',
+ 'butterfly',
+ 'camel',
+ 'can',
+ 'castle',
+ 'caterpillar',
+ 'cattle',
+ 'chair',
+ 'chimpanzee',
+ 'clock',
+ 'cloud',
+ 'cockroach',
+ 'couch',
+ 'cra',
+ 'crocodile',
+ 'cup',
+ 'dinosaur',
+ 'dolphin',
+ 'elephant',
+ 'flatfish',
+ 'forest',
+ 'fox',
+ 'girl',
+ 'hamster',
+ 'house',
+ 'kangaroo',
+ 'keyboard',
+ 'lamp',
+ 'lawn',
+ 'leopard',
+ 'lion',
+ 'lizard',
+ 'lobster',
+ 'man',
+ 'maple',
+ 'motorcycle',
+ 'mountain',
+ 'mouse',
+ 'mushroom',
+ 'oak',
+ 'orange',
+ 'orchid',
+ 'otter',
+ 'palm',
+ 'pear',
+ 'pickup',
+ 'pine',
+ 'plain',
+ 'plate',
+ 'poppy',
+ 'porcupine',
+ 'possum',
+ 'rabbit',
+ 'raccoon',
+ 'ray',
+ 'road',
+ 'rocket',
+ 'rose',
+ 'sea',
+ 'seal',
+ 'shark',
+ 'shrew',
+ 'skunk',
+ 'skyscraper',
+ 'snail',
+ 'snake',
+ 'spider',
+ 'squirrel',
+ 'streetcar',
+ 'sunflower',
+ 'sweet',
+ 'table',
+ 'tank',
+ 'telephone',
+ 'television',
+ 'tiger',
+ 'tractor',
+ 'train',
+ 'trout',
+ 'tulip',
+ 'turtle',
+ 'wardrobe',
+ 'whale',
+ 'willow',
+ 'wolf',
+ 'woman',
+ 'worm']
+
+def prepare_superclasses(superclasses: dict) -> list:
+
+    cluster_assignments = []
+    # for each value in terms, get the superclass key in superclasses that contain it
+    for term in terms:
+        # loop over superclasses values to find where term exists
+        for key, value in superclasses.items():
+            if term in value :
+                # get key index in the list of all keys
+                key_index = list(superclasses.keys()).index(key)
+                # append the key index to the output list
+                cluster_assignments.append(key_index)
+    return cluster_assignments
+
+
 
 
 def dataset_with_index(DatasetClass: Type[Dataset]) -> Type[Dataset]:
@@ -42,6 +182,7 @@ def dataset_with_index(DatasetClass: Type[Dataset]) -> Type[Dataset]:
     """
 
     class DatasetWithIndex(DatasetClass):
+
         def __getitem__(self, index):
             data = super().__getitem__(index)
             return (index, *data)
@@ -137,6 +278,7 @@ class NCropAugmentation:
         Returns:
             List[torch.Tensor]: an image in the tensor format.
         """
+        # Cant i just transform directly the image to tensor here?
 
         return [self.transform(x) for _ in range(self.num_crops)]
 
@@ -247,9 +389,150 @@ class CifarTransform(BaseTransform):
                 transforms.RandomHorizontalFlip(p=horizontal_flip_prob),
                 transforms.ToTensor(),
                 transforms.Normalize(mean, std),
+
             ]
         )
 
+def cifar_dataset_with_index(DatasetClass: Type[Dataset]) -> Type[Dataset]:
+    """Factory for datasets that also returns the data index.
+
+    Args:
+        DatasetClass (Type[Dataset]): Dataset class to be wrapped.
+
+    Returns:
+        Type[Dataset]: dataset with index.
+    """
+
+    class CifarDatasetWithIndex(DatasetClass):
+        
+        def _define_all_transforms(self):
+            
+            cifar_transform_dict = {
+                0:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.0,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                1:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.0,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.6),
+                2:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.0,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                3:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.1,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                4:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.1,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                5:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.4,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                6:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.25,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                7:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.0,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                8:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.15,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                9:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.1,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                10:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.0,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                11:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.05,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                12:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.0,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                13:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.1,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                14:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.05,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.7),
+                15:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.15,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                16:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.0,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                17:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.35,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                18:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.1,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.8),
+                19:CifarTransform(cifar="cifar100",brightness=0.4,contrast=0.4,
+                                saturation=0.2,
+                                hue=0.15,
+                                color_jitter_prob = 0.8,
+                                min_scale = 0.7),
+            }
+            self.cluster_assignments = prepare_superclasses(superclasses)
+            self.transform_dict = cifar_transform_dict
+
+        def __getitem__(self, index):
+            data = super().__getitem__(index)
+            img, target = data
+            # convert img to np array
+
+
+            img1 = img[0]
+            img2 = img[1]
+            # convert torch tensor to PIL
+            img1 = transforms.ToPILImage()(img1)
+            img2 = transforms.ToPILImage()(img2)
+
+
+            cluster = self.cluster_assignments[target]
+            transforms_list = self.transform_dict[cluster]
+            #composed_transforms = transforms.Compose(transforms_list)
+            img1 = transforms_list(img1)
+            img2 = transforms_list(img2)
+            return (index, [img1,img2], target)
+
+    return CifarDatasetWithIndex
 
 class STLTransform(BaseTransform):
     def __init__(
@@ -448,6 +731,18 @@ class CustomTransform(BaseTransform):
             ]
         )
 
+class EmptyTransform(BaseTransform):
+    def __init__(
+        self
+    ):
+        super().__init__()
+
+        self.transform = transforms.Compose(
+                [
+                    transforms.ToTensor(),
+                ]
+            )
+
 
 def prepare_transform(dataset: str, **kwargs) -> Any:
     """Prepares transforms for a specific dataset. Optionally uses multi crop.
@@ -460,7 +755,7 @@ def prepare_transform(dataset: str, **kwargs) -> Any:
     """
 
     if dataset in ["cifar10", "cifar100"]:
-        return CifarTransform(cifar=dataset, **kwargs)
+        return EmptyTransform()
     elif dataset == "stl10":
         return STLTransform(**kwargs)
     elif dataset in ["imagenet", "imagenet100"]:
@@ -490,6 +785,7 @@ def prepare_n_crop_transform(
     for transform, num_crops in zip(transforms, num_crops_per_aug):
         T.append(NCropAugmentation(transform, num_crops))
     return FullTransformPipeline(T)
+
 
 
 def prepare_datasets(
@@ -528,12 +824,15 @@ def prepare_datasets(
 
     if dataset in ["cifar10", "cifar100"]:
         DatasetClass = vars(torchvision.datasets)[dataset.upper()]
-        train_dataset = dataset_with_index(DatasetClass)(
+        train_dataset = cifar_dataset_with_index(DatasetClass)(
             data_dir / train_dir,
             train=True,
             download=download,
             transform=transform,
+
         )
+        # My modifications for the transforms will be here?
+        train_dataset._define_all_transforms()
 
     elif dataset == "stl10":
         train_dataset = dataset_with_index(STL10)(

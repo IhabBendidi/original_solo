@@ -119,6 +119,7 @@ def parse_args_linear() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--pretrained_feature_extractor", type=str)
+    parser.add_argument("--seed", type=int, default=5)
 
     # add shared arguments
     dataset_args(parser)

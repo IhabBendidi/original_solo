@@ -1,9 +1,9 @@
 #!/bin/bash
-CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset cifar100 --no_labels  \
+CUDA_VISIBLE_DEVICES=0,1,2 python3 main_pretrain.py --dataset cifar100 --no_labels  \
     --backbone resnet18 \
     --data_dir datasets \
     --max_epochs 1000 \
-    --devices 0 --accelerator gpu  --sync_batchnorm \
+    --devices 2 --accelerator gpu  --sync_batchnorm \
     --precision 16 \
     --optimizer sgd \
     --grad_clip_lars \
@@ -23,7 +23,7 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --gaussian_prob 0.0 0.0 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --nam simclr${1} \
+    --nam simclr_ncrop_first \
     --project Cifar_results \
     --entity labrats \
     --wandb \
@@ -32,15 +32,15 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_pretrain.py --dataset
     --method simclr \
     --temperature 0.2 \
     --proj_hidden_dim 2048 \
-    --proj_output_dim 256 --color_jitter_prob ${1} --seed ${2}
-CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
+    --proj_output_dim 256 --color_jitter_prob 0.8 --seed 6
+CUDA_VISIBLE_DEVICES=0,1,2 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset cifar100 \
     --backbone resnet18 \
     --data_dir datasets \
     --train_dir cifar100/train \
     --val_dir cifar100/val \
     --max_epochs 100 \
-    --devices 0 --accelerator gpu  --sync_batchnorm \
+    --devices 2 --accelerator gpu  --sync_batchnorm \
     --precision 16 \
     --optimizer sgd \
     --scheduler step \
@@ -49,8 +49,8 @@ CUDA_VISIBLE_DEVICES=0 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --weight_decay 0 \
     --batch_size 256 \
     --num_workers 4 \
-    --nam simclr${1}  \
+    --nam simclr_ncrop_first  \
     --pretrained_feature_extractor lorepm_ipsum.ckpt \
     --project Cifar_results \
     --entity labrats \
-    --wandb --offline
+    --wandb --offline --seed 6

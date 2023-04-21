@@ -1,1 +1,0 @@
-trained_models/mocov2plus/3p4fhyof

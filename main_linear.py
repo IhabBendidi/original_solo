@@ -65,7 +65,7 @@ def main():
             backbone.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=2, bias=False)
             backbone.maxpool = nn.Identity()
     # read content in os.path.join("trained_paths", str(args['nam'])+str(args["color_jitter_prob"]) file 
-    with open(os.path.join("training_model_paths", str(args.name) + '_trained_path.txt'), 'r') as f:
+    with open(os.path.join("training_model_paths", str(args.name)+ '_'  + str(args.dataset) + '_' + str(args.seed) + '_trained_path.txt'), 'r') as f:
         for line in f:
             trained_path = line
             break
@@ -96,7 +96,7 @@ def main():
     print(f"loaded {ckpt_path}")
 
     del args.backbone
-    model = LinearModel(backbone, **args.__dict__)
+    model = LinearModel(backbone = backbone,args = args, **args.__dict__)
     make_contiguous(model)
 
     train_loader, val_loader = prepare_data(
