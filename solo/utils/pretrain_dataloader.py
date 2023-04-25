@@ -525,8 +525,12 @@ def cifar_dataset_with_index(DatasetClass: Type[Dataset]) -> Type[Dataset]:
             img1 = transforms.ToPILImage()(img1)
             img2 = transforms.ToPILImage()(img2)
 
+            # This is when we're using correct superclasses
+            #cluster = self.cluster_assignments[target]
 
-            cluster = self.cluster_assignments[target]
+            # This is where we're using random numbers symbolizing superclasses
+            cluster = random.randint(0,19)
+
             transforms_list = self.transform_dict[cluster]
             #composed_transforms = transforms.Compose(transforms_list)
             img1 = transforms_list(img1)
