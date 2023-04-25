@@ -23,7 +23,7 @@ CUDA_VISIBLE_DEVICES=0,1,2 python3 main_pretrain.py --dataset cifar100 --no_labe
     --gaussian_prob 0.0 0.0 \
     --crop_size 32 \
     --num_crops_per_aug 1 1 \
-    --nam simclr_normal_transform${1} \
+    --nam simclr_normal_transform \
     --project Cifar_results \
     --entity labrats \
     --wandb \
@@ -32,7 +32,7 @@ CUDA_VISIBLE_DEVICES=0,1,2 python3 main_pretrain.py --dataset cifar100 --no_labe
     --method simclr \
     --temperature 0.2 \
     --proj_hidden_dim 2048 \
-    --proj_output_dim 256 --color_jitter_prob 0.8 --seed ${1}
+    --proj_output_dim 256 --color_jitter_prob 0.8 --seed 9
 CUDA_VISIBLE_DEVICES=0,1,2 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --dataset cifar100 \
     --backbone resnet18 \
@@ -49,8 +49,8 @@ CUDA_VISIBLE_DEVICES=0,1,2 CUDA_LAUNCH_BLOCKING=1 python3 main_linear.py \
     --weight_decay 0 \
     --batch_size 256 \
     --num_workers 4 \
-    --nam simclr_normal_transform${1}  \
+    --nam simclr_normal_transform  \
     --pretrained_feature_extractor lorepm_ipsum.ckpt \
     --project Cifar_results \
     --entity labrats \
-    --wandb --offline --seed 6
+    --wandb --offline --seed 9

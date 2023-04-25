@@ -43,8 +43,8 @@ except ImportError:
     _umap_available = False
 else:
     _umap_available = True
-
-
+import json
+from pathlib import Path
 from solo.utils.checkpointer import Checkpointer
 from solo.utils.classification_dataloader import prepare_data as prepare_data_classification
 from solo.utils.misc import make_contiguous
@@ -61,6 +61,8 @@ def main():
 
     args = parse_args_pretrain()
     seed_everything(args.seed)
+    
+
 
     assert args.method in METHODS, f"Choose from {METHODS.keys()}"
 

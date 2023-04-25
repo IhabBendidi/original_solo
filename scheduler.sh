@@ -6,6 +6,7 @@ for s in 5 6 7 8 9; do
             echo "#SBATCH --job-name="$d"_"$s"_normal_transforms" >> batch_script.slurm
             echo "#SBATCH --ntasks=1" >> batch_script.slurm
             echo "#SBATCH --gres=gpu:1 " >> batch_script.slurm
+            echo "#SBATCH -A kio@v100 " >> batch_script.slurm
             echo "#SBATCH -C v100-32g" >> batch_script.slurm
             echo "#SBATCH --qos=qos_gpu-t3" >> batch_script.slurm
             echo "#SBATCH --cpus-per-task=6" >> batch_script.slurm

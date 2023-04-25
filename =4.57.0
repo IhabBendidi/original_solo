@@ -1,0 +1,6 @@
+Looking in indexes: https://pypi.org/simple, https://pypi.ngc.nvidia.com
+Collecting tqdm
+  Downloading tqdm-4.65.0-py3-none-any.whl (77 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 77.1/77.1 kB 5.1 MB/s eta 0:00:00
+Installing collected packages: tqdm
+Successfully installed tqdm-4.65.0
